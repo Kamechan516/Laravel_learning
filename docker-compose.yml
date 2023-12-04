@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+    web:
+        build:
+            context: ./Docker/nginx
+            dockerfile: Dockerfile
+            target: dev
+        container_name: Web
+        ports:
+            - "8080:80"
+        volumes:
+            - ./Docker/nginx/conf/dev/laravel.conf:/etc/nginx/conf/laravel.conf
+            - ./Docker/nginx/conf/dev/nginx.conf:/etc/nginx/nginx.conf
+            - ./src:/var/www/app
+        networks:
+            - net
+
+    php:
+        build:
+            context: ./Docker/php
+            dockerfile: Dockerfile
+            target: dev
+        container_name: php
+        volumes:
+            - ./src:/var/www/app
+            - ./Docker/php/conf/dev/php.ini:/usr/local/etc/php/php.ini
+        networks:
+            - net
+
+    db:
+        image: mysql:8.2
+        container_name: DataBase
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: laravel_learning
+            MYSQL_USER: user
+            MYSQL_PASSWORD: user
+        volumes:
+            - db:/var/lib/mysql
+        networks:
+            - net
+
+    phpmyadmin:
+        image: phpmyadmin:5.2.1
+        container_name: PHPMyAdmin
+        ports:
+            - "8081:80"
+        environment:
+            PMA_HOST: db
+            PMA_USER: user
+            PMA_PASSWORD: user
+        networks:
+            - net
+
+networks:
+    net:
+        driver: bridge
+
+volumes:
+    db:
